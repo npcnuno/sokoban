@@ -33,14 +33,14 @@ import pt.iscte.poo.utils.Point2D;
 
 public class GameEngine implements Observer {
 	
-	private int level = 0;
+	private int level = 2;
 
 
 	// Dimensoes da grelha de jogo
 	public static final int GRID_HEIGHT = 10;
 	public static final int GRID_WIDTH = 10;
 	
-	private String[][] floorScheme = new String[GRID_WIDTH][GRID_HEIGHT];
+	private char[][] floorScheme = new char[GRID_WIDTH][GRID_HEIGHT];
 
 	
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
@@ -77,7 +77,7 @@ public class GameEngine implements Observer {
 		
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
-		createMoreStuff();      // criar mais algun objetos (empilhadora, caixotes,...)
+		//createMoreStuff();      // criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
 
 		
@@ -115,27 +115,18 @@ public class GameEngine implements Observer {
 			for (int x=0; x<GRID_HEIGHT; x++) {
 				switch(floorScheme[y][x]) {
 					
-				case " ": 									tileList.add(new Chao(new Point2D(x,y)));break;	
-
-				
-					case "X":
-									tileList.add(new Chao(new Point2D(x,y)));	
-
+				case ' ': 									
+				tileList.add(new Chao(new Point2D(x,y)));break;	
+					case 'X':
 					tileList.add(new Alvo(new Point2D(x,y)));break;	
-				case "C":
-									tileList.add(new Chao(new Point2D(x,y)));	
-
+				case 'C':
 					tileList.add(new Caixote(new Point2D(x,y)));	break;				
-				case "#":
-									tileList.add(new Chao(new Point2D(x,y)));	
-	
+				case '#':	
 				tileList.add(new Parede(new Point2D(x,y)));break;
-				case "B":
-									tileList.add(new Chao(new Point2D(x,y)));	
-
+				case 'B':
 					tileList.add(new Bateria(new Point2D(x,y)));break;	
 				
-					case "E":
+					case 'E':
 					tileList.add(new Chao(new Point2D(x,y)));	
 					bobcat = new Empilhadora(new Point2D(x,y));
 					tileList.add(bobcat);	
@@ -147,6 +138,14 @@ public class GameEngine implements Observer {
 		}
 			
 	
+		public int getLayer(Point2D point){
+			for (ImageTile tile : tileList) {
+				if(point.equals(tile.getPosition())){
+					return tile.getLayer();
+				}
+			}
+			return 0;
+		}
 
 	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes
 	private void createMoreStuff() {
@@ -165,7 +164,7 @@ public class GameEngine implements Observer {
 	
 	//extrair esquema
 	private void getFloorScheme() {
-		File file = new File("./levels/level"+ Integer.toString(this.level)+".txt");
+		File file = new File("./levels/level"+level+".txt");
 		
 		
 		try {

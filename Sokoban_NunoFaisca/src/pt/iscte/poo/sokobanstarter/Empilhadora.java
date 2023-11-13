@@ -1,19 +1,22 @@
 package pt.iscte.poo.sokobanstarter;
 
-import java.util.Random;
-
-import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Empilhadora implements ImageTile{
+public class Empilhadora extends GameElement{
+	private static String FORKLIFT_DOWN = "Empilhadora_D";
+	private static String FORKLIFT_UP = "Empilhadora_U";
+	private static String FORKLIFT_LEFT = "Empilhadora_L";
+	private static String FORKLIFT_RIGHT = "Empilhadora_R";
 
 	private Point2D position;
 	private String imageName;
 	
+	
 	public Empilhadora(Point2D initialPosition){
+		super(initialPosition);
 		position = initialPosition;
-		imageName = "Empilhadora_D";
+		imageName = FORKLIFT_DOWN;
 	}
 	
 	@Override
@@ -43,10 +46,28 @@ public class Empilhadora implements ImageTile{
 		Direction randomDirection = possibleDirections[randomNumber];
 		*/
 		// Move segundo a direcao gerada, mas so' se estiver dentro dos limites
+		switch (dir) {
+			case DOWN:
+			imageName = FORKLIFT_DOWN;
+			break;
+			case UP:
+			imageName = FORKLIFT_UP;
+			break;
+			case LEFT:
+			imageName = FORKLIFT_LEFT;
+			break;
+			case RIGHT:
+			imageName = FORKLIFT_RIGHT;
+			break;
+			default:
+			break;
+		}
 		Point2D newPosition = position.plus(dir.asVector());
+		GameEngine instance = GameEngine.getInstance();
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && 
 			newPosition.getY()>=0 && newPosition.getY()<10 ){
-			position = newPosition;
+			if(instance.getLayer(newPosition) == 0)
+				position = newPosition;
 		}
 	}
 }
