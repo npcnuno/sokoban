@@ -82,7 +82,7 @@ public class GameEngine implements Observer {
 
 		
 		// Escrever uma mensagem na StatusBar
-		gui.setStatusMessage("Sokoban Starter - demo");
+		gui.setStatusMessage("Sokoban Starter");
 	}
 
 	// O metodo update() e' invocado automaticamente sempre que o utilizador carrega numa tecla
@@ -151,13 +151,13 @@ public class GameEngine implements Observer {
 		}
 
 	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes
-	private void createMoreStuff() {
+	/*private void createMoreStuff() {
 		//bobcat = new Empilhadora( new Point2D(5,5));
 		//tileList.add(bobcat);
 
 		tileList.add(new Caixote(new Point2D(3,3)));
 		tileList.add(new Caixote(new Point2D(3,2)));
-	}
+	}*/
 
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
