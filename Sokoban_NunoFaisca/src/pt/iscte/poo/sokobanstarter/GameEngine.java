@@ -33,7 +33,7 @@ import pt.iscte.poo.utils.Point2D;
 
 public class GameEngine implements Observer {
 	
-	private int level = 6;
+	private int level = 1;
 
 
 	// Dimensoes da grelha de jogo
@@ -78,7 +78,7 @@ public class GameEngine implements Observer {
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
 		//createMoreStuff();      // criar mais algun objetos (empilhadora, caixotes,...)
-		sendImagesToGUI();      // enviar as imagens para a GUI
+		sendImagesToGUI();      //a enviar as imagens para a GUI
 
 		
 		// Escrever uma mensagem na StatusBar
@@ -87,16 +87,14 @@ public class GameEngine implements Observer {
 
 	// O metodo update() e' invocado automaticamente sempre que o utilizador carrega numa tecla
 	// no argumento do metodo e' passada uma referencia para o objeto observado (neste caso a GUI)
+	
+	//separar, por à parte, adicionalmente já havia uma função para isto na diretion.- professor 
 	@Override
 	public void update(Observed source) {
-
-		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
-
-		/*if (key == KeyEvent.VK_ENTER)// se a tecla for ENTER, manda a empilhadora mover*/
-		Direction dir = Teclado.Key_Pressed(key);		
-		
-		if(dir != null)
-			bobcat.move(dir);
+		int key = gui.keyPressed();   
+		Direction dir = Teclado.Key_Pressed(key);
+        if(dir != null)
+            bobcat.move(dir);
 		gui.update();                  
 		// redesenha a lista de ImageTiles na GUI, 
 		// tendo em conta as novas posicoes dos objetos
@@ -110,31 +108,25 @@ public class GameEngine implements Observer {
 				switch(floorScheme[y][x]) {
 					
 				case ' ': 									
-				tileList.add(new Chao(new Point2D(x,y)));break;	
-					case 'X':
-					tileList.add(new Alvo(new Point2D(x,y)));break;	
+					tileList.add(new Chao(new Point2D(x,y)));
+					break;	
+				case 'X':
+					tileList.add(new Alvo(new Point2D(x,y)));
+					break;	
 				case 'C':
-					tileList.add(new Caixote(new Point2D(x,y)));	break;				
+					tileList.add(new Caixote(new Point2D(x,y)));	
+					break;				
 				case '#':	
-				tileList.add(new Parede(new Point2D(x,y)));break;
+					tileList.add(new Parede(new Point2D(x,y)));
+					break;
 				case 'B':
-					tileList.add(new Bateria(new Point2D(x,y)));break;	
-				case 'O':
-					tileList.add(new Buraco(new Point2D(x,y)));break;	
-				case 'P':
-					tileList.add(new Palete(new Point2D(x,y)));break;	
-				case 'M':
-					tileList.add(new Martelo(new Point2D(x,y)));break;
-				case '%':
-					tileList.add(new ParedeRachada(new Point2D(x,y)));break;
-				case 'T':
-					tileList.add(new Teleporte(new Point2D(x,y)));break;			
+					tileList.add(new Bateria(new Point2D(x,y)));
+					break;	
 				case 'E':
 					tileList.add(new Chao(new Point2D(x,y)));	
 					bobcat = new Empilhadora(new Point2D(x,y));
 					tileList.add(bobcat);	
-					break;
-				
+					break;	
 				}
 			}
 			}
@@ -173,7 +165,7 @@ public class GameEngine implements Observer {
 		try {
 		    Scanner sc = new Scanner(file);
 		    int row = 0;
-		    while (sc.hasNextLine() && row != 10) {
+		    while (sc.hasNextLine() && row!= 10) {
  		            floorScheme[row] = sc.nextLine().toCharArray();
 
 		        row++;
