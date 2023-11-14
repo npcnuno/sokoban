@@ -33,7 +33,7 @@ import pt.iscte.poo.utils.Point2D;
 
 public class GameEngine implements Observer {
 	
-	private int level = 2;
+	private int level = 6;
 
 
 	// Dimensoes da grelha de jogo
@@ -92,17 +92,11 @@ public class GameEngine implements Observer {
 
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
 
-		/*if (key == KeyEvent.VK_ENTER)// se a tecla for ENTER, manda a empilhadora mover
-			
-			bobcat.move();*/
-		if(key == KeyEvent.VK_LEFT || key == KeyEvent.VK_KP_LEFT || key == KeyEvent.VK_A)
-			bobcat.move(Direction.LEFT);
-		if(key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_KP_RIGHT  || key == KeyEvent.VK_D)
-			bobcat.move(Direction.RIGHT );
-		if(key == KeyEvent.VK_UP || key == KeyEvent.VK_KP_UP  || key == KeyEvent.VK_W)
-			bobcat.move(Direction.UP);
-		if(key == KeyEvent.VK_DOWN || key == KeyEvent.VK_KP_DOWN  || key == KeyEvent.VK_S)
-			bobcat.move(Direction.DOWN);
+		/*if (key == KeyEvent.VK_ENTER)// se a tecla for ENTER, manda a empilhadora mover*/
+		Direction dir = Teclado.Key_Pressed(key);		
+		
+		if(dir != null)
+			bobcat.move(dir);
 		gui.update();                  
 		// redesenha a lista de ImageTiles na GUI, 
 		// tendo em conta as novas posicoes dos objetos
@@ -125,8 +119,17 @@ public class GameEngine implements Observer {
 				tileList.add(new Parede(new Point2D(x,y)));break;
 				case 'B':
 					tileList.add(new Bateria(new Point2D(x,y)));break;	
-				
-					case 'E':
+				case 'O':
+					tileList.add(new Buraco(new Point2D(x,y)));break;	
+				case 'P':
+					tileList.add(new Palete(new Point2D(x,y)));break;	
+				case 'M':
+					tileList.add(new Martelo(new Point2D(x,y)));break;
+				case '%':
+					tileList.add(new ParedeRachada(new Point2D(x,y)));break;
+				case 'T':
+					tileList.add(new Teleporte(new Point2D(x,y)));break;			
+				case 'E':
 					tileList.add(new Chao(new Point2D(x,y)));	
 					bobcat = new Empilhadora(new Point2D(x,y));
 					tileList.add(bobcat);	
@@ -170,8 +173,8 @@ public class GameEngine implements Observer {
 		try {
 		    Scanner sc = new Scanner(file);
 		    int row = 0;
-		    while (sc.hasNextLine() ) {
- 		            floorScheme[row] = sc.nextLine().split("");
+		    while (sc.hasNextLine() && row != 10) {
+ 		            floorScheme[row] = sc.nextLine().toCharArray();
 
 		        row++;
 
