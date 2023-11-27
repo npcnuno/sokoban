@@ -219,7 +219,7 @@ public class ImageMatrixGUI extends Observed {
 
     private void initImages() {
         File dir = new File(IMAGE_DIR);
-       for (File f : dir.listFiles()) {
+        for (File f : dir.listFiles()) {
             assert (f.getName().lastIndexOf('.') != -1);
             imageDB.put(f.getName().substring(0, f.getName().lastIndexOf('.')),
                     new ImageIcon(IMAGE_DIR + "/" + f.getName()));

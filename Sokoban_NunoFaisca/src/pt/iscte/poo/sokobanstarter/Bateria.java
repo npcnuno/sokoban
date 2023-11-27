@@ -4,9 +4,11 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Bateria extends GameElement {
 	
+	private int Nivelbateria;
 	
 	public Bateria(Point2D position) {
 		super(position);
+		Nivelbateria = 100;
 	}
 
 	@Override
@@ -16,7 +18,11 @@ public class Bateria extends GameElement {
 
 	@Override
 	public int getLayer() {
-		return 1;
+		return 0;
+	}
+	
+	public int addBatteryToBobcat() {
+		return Nivelbateria;
 	}
 
 

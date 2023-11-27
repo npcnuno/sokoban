@@ -33,7 +33,7 @@ import pt.iscte.poo.utils.Point2D;
 
 public class GameEngine implements Observer {
 	
-	private int level = 6;
+	private int level = 2;
 
 
 	// Dimensoes da grelha de jogo
@@ -45,9 +45,9 @@ public class GameEngine implements Observer {
 	
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
-	private List<ImageTile> tileList;	// Lista de imagens
+	private List<GameElement> tileList;	// Lista de imagens
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
-
+	private int bateria;
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
@@ -71,18 +71,17 @@ public class GameEngine implements Observer {
 		gui.setSize(GRID_HEIGHT, GRID_WIDTH);  // 2. configurar as dimensoes 
 		gui.registerObserver(this);            // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go();                              // 4. lancar a GUI
-
 		
 		// Criar o cenario de jogo
 		
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
-		//createMoreStuff();      // criar mais algun objetos (empilhadora, caixotes,...)
+		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
-
+		bateria = bobcat.getBateria();
 		
 		// Escrever uma mensagem na StatusBar
-		gui.setStatusMessage("Sokoban Starter");
+		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
 	}
 
 	// O metodo update() e' invocado automaticamente sempre que o utilizador carrega numa tecla
@@ -97,9 +96,67 @@ public class GameEngine implements Observer {
 		
 		if(dir != null)
 			bobcat.move(dir);
-		gui.update();                  
+		gui.update();
+		bateria = bobcat.getBateria();
+		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
+		if( bateria <=  0) {
+				restart();
+		}
+			
+			
+
+		
 		// redesenha a lista de ImageTiles na GUI, 
 		// tendo em conta as novas posicoes dos objetos
+	}
+	public GameElement getGameElement(Point2D point){
+
+		for (GameElement tile : tileList) {
+				if(point.equals(tile.getPosition())){
+					return tile;
+				}
+			}
+		return null;
+	}
+
+	public void removeGameElement(Point2D point, GameElement element2){
+		GameElement element = getGameElement(point);
+		
+		gui.removeImage((ImageTile) element);
+		int i = 0;
+		for (GameElement tile : tileList) {
+			if(point.equals(tile.getPosition())){
+				tileList.add(i, element2);
+				gui.addImage(element2);
+
+				break;
+			}
+			i++;
+		}
+
+	}
+	
+
+	public void addGameElement(GameElement GameElement){
+		gui.addImage(GameElement);
+		
+	}
+
+	// Reinicia o jogo
+	private void restart(){
+		gui.clearImages();
+		tileList.clear();
+		level = 1;
+		getFloorScheme();
+		createWarehouse();      // criar o armazem
+		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
+		sendImagesToGUI();      // enviar as imagens para a GUI
+		bateria = bobcat.getBateria();
+		gui.update();
+
+		// Escrever uma mensagem na StatusBar
+		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
+		
 	}
 
 
@@ -118,6 +175,7 @@ public class GameEngine implements Observer {
 				case '#':	
 				tileList.add(new Parede(new Point2D(x,y)));break;
 				case 'B':
+					//tileList.add(new Chao(new Point2D(x,y)));
 					tileList.add(new Bateria(new Point2D(x,y)));break;	
 				case 'O':
 					tileList.add(new Buraco(new Point2D(x,y)));break;	
@@ -162,7 +220,11 @@ public class GameEngine implements Observer {
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
 	private void sendImagesToGUI() {
-		gui.addImages(tileList);
+		List<ImageTile> imageTileList = new ArrayList<>();
+		for (GameElement element : tileList) {
+				imageTileList.add((ImageTile) element);
+		}
+		gui.addImages(imageTileList);
 	}
 	
 	//extrair esquema
@@ -174,7 +236,7 @@ public class GameEngine implements Observer {
 		    Scanner sc = new Scanner(file);
 		    int row = 0;
 		    while (sc.hasNextLine() && row != 10) {
- 		            floorScheme[row] = sc.nextLine().toCharArray();
+				floorScheme[row] = sc.nextLine().toCharArray();
 
 		        row++;
 
