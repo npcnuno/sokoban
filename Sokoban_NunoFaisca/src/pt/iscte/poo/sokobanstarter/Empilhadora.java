@@ -1,9 +1,8 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Direction;
-import pt.iscte.poo.utils.Point2D;
 
-public class Empilhadora extends GameElement{
+public class Empilhadora extends GameElement {
 	private static String FORKLIFT_DOWN = "Empilhadora_D";
 	private static String FORKLIFT_UP = "Empilhadora_U";
 	private static String FORKLIFT_LEFT = "Empilhadora_L";
@@ -37,6 +36,8 @@ public class Empilhadora extends GameElement{
 	}
 	
 	public int getBateria() { return this.bateria; }
+	
+
 
 	
 	
@@ -67,35 +68,6 @@ public class Empilhadora extends GameElement{
 			break;
 		}
 		Point2D newPosition = position.plus(dir.asVector());
-		Point2D cnewPosition = newPosition.plus(dir.asVector());
-
-		GameEngine instance = GameEngine.getInstance();
-		this.bateria = this.bateria - 1;
-		if (newPosition.getX()>=0 && newPosition.getX()<10 && 
-			newPosition.getY()>=0 && newPosition.getY()<10 ){
-			GameElement objeto = instance.getGameElement(newPosition);
-
-			if(instance.getLayer(newPosition) == 0) {
-					
-				if(objeto.getName() == "Bateria"){
-					Bateria bateria = (Bateria) objeto;
-					
-					
-					this.bateria = this.bateria + bateria.addBatteryToBobcat();
-					instance.removeGameElement(newPosition, new Chao(newPosition));
-				}
-				position = newPosition;
-				//Add Battery to bobcat
-				}
-			
-			else if(instance.getLayer(newPosition) == 1){
-				if(objeto.getName() == "Caixote"){
-					Caixote caixote = (Caixote) objeto;
-					if(caixote.move(dir))
-						position = newPosition;
-				}
-			}
-		
-		}
+		position = newPosition;
 	}
 }

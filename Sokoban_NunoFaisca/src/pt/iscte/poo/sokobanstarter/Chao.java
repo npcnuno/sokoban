@@ -1,5 +1,6 @@
 package pt.iscte.poo.sokobanstarter;
 
+import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
 public class Chao extends GameElement {
@@ -29,10 +30,9 @@ public class Chao extends GameElement {
 		return position;
 	}
 
-	public void move(Point2D newPosition) {
-		this.position = newPosition;
-
-			
+	@Override
+	public void move(Direction direction) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'move'");
 	}
-
 }

@@ -1,5 +1,6 @@
 package pt.iscte.poo.sokobanstarter;
 
+import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
 public class Bateria extends GameElement {
@@ -23,6 +24,12 @@ public class Bateria extends GameElement {
 	
 	public int addBatteryToBobcat() {
 		return Nivelbateria;
+	}
+
+	@Override
+	public void move(Direction direction) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'move'");
 	}
 
 

@@ -7,11 +7,13 @@ public class Caixote extends GameElement {
 
 	private Point2D position;
 	private String imageName;
+	private boolean alvo;
 	
-	public Caixote(Point2D initialposition) {
+	public Caixote(Point2D initialposition, boolean alvo) {
 		super(initialposition);
 		position = initialposition;
 		imageName = "Caixote";
+		this.alvo = alvo;
 
 	}
 
@@ -25,43 +27,34 @@ public class Caixote extends GameElement {
 		return 1;
 	}
 
+
 	@Override
 	public Point2D getPosition(){
 		return position;
 	}
-	public boolean move(Direction dir) {
-		
-		// Gera uma direcao aleatoria para o movimento
-		/*Direction[] possibleDirections = Direction.values();
-		Random randomizer = new Random();
-		int randomNumber = randomizer.nextInt(possibleDirections.length);
-		Direction randomDirection = possibleDirections[randomNumber];
-		*/
-		// Move segundo a direcao gerada, mas so' se estiver dentro dos limites
+
+	@Override
+	public void move(Direction dir) {
 		Point2D newPosition = position.plus(dir.asVector());
 		GameEngine instance = GameEngine.getInstance();
-		if (newPosition.getX()>=0 && newPosition.getX()<10 && 
-			newPosition.getY()>=0 && newPosition.getY()<10 ){
+		
 			GameElement element = instance.getGameElement(newPosition);
 
-			if(instance.getLayer(newPosition) == 0){
-				if(element.getName() == "Chao") {
-					
-					Chao chao = (Chao) element;
-					
-					instance.removeGameElement(newPosition, new Caixote(newPosition));
-					instance.removeGameElement(position, new Chao(position));
-				
-					
-					
-				return true;
-				} else {
-					
-					
+			if(element.getLayer() == 0){
+				if(alvo == true) {
+					alvo = false;
+					instance.alvosAtingidos--;
 				}
-			return true;}
+				if(element.getName() == "Alvo") {
+					alvo = true;
+					instance.alvosAtingidos++;
+
+				}
+				instance.addGameElement(newPosition, new Caixote(newPosition, alvo));
+				instance.removeGameElement(position);
+				
+				
 		}
-		return false;
 	}
 	
 }

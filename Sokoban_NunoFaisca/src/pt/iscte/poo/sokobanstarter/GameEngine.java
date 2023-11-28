@@ -1,8 +1,11 @@
 package pt.iscte.poo.sokobanstarter;
 
 import java.awt.event.KeyEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -31,9 +34,9 @@ import pt.iscte.poo.utils.Point2D;
 // Tudo o mais podera' ser diferente!
 
 
-public class GameEngine implements Observer {
+public class GameEngine implements Observer  {
 	
-	private int level = 2;
+	private int level = 1;
 
 
 	// Dimensoes da grelha de jogo
@@ -45,18 +48,22 @@ public class GameEngine implements Observer {
 	
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
-	private List<GameElement> tileList;	// Lista de imagens
+	private List<GameElement> tileList;	// Lista de imagens estáticas (no nosso exemplo, apenas o chao)
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
-	private int bateria;
+	public int bateria;
+	public int alvosAtingidos = 0;
+	private int NumAlvosNivel = 0;
+	//private GameMoves gameMoves; // Add this line to declare the gameMoves instance
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
-		tileList = new ArrayList<>();   
+		tileList = new ArrayList<>();
+		//gameMoves = new GameMoves(); // Instantiate the gameMoves instance
 	}
 
 	// Implementacao do singleton para o GameEngine
 	public static GameEngine getInstance() {
-		if (INSTANCE==null)
+		if (INSTANCE == null)
 			return INSTANCE = new GameEngine();
 		return INSTANCE;
 	}
@@ -90,17 +97,22 @@ public class GameEngine implements Observer {
 	public void update(Observed source) {
 
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
-
+		
 		/*if (key == KeyEvent.VK_ENTER)// se a tecla for ENTER, manda a empilhadora mover*/
 		Direction dir = Teclado.Key_Pressed(key);		
-		
-		if(dir != null)
+		if(dir != null){
+			GameMoves gameMoves = new GameMoves();
+			gameMoves.isValid(dir, bobcat);
 			bobcat.move(dir);
+		}
 		gui.update();
 		bateria = bobcat.getBateria();
 		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
 		if( bateria <=  0) {
 				restart();
+		}
+		if(alvosAtingidos == NumAlvosNivel) {
+			nextLevel();
 		}
 			
 			
@@ -119,10 +131,8 @@ public class GameEngine implements Observer {
 		return null;
 	}
 
-	public void removeGameElement(Point2D point, GameElement element2){
-		GameElement element = getGameElement(point);
+	public void addGameElement(Point2D point, GameElement element2){
 		
-		gui.removeImage((ImageTile) element);
 		int i = 0;
 		for (GameElement tile : tileList) {
 			if(point.equals(tile.getPosition())){
@@ -135,18 +145,44 @@ public class GameEngine implements Observer {
 		}
 
 	}
+	public void removeGameElement(Point2D point){
+		GameElement element = getGameElement(point);
+		gui.removeImage((ImageTile) element);
+		int i = 0;
+		for (GameElement tile : tileList) {
+			if(point.equals(tile.getPosition())){
+				tileList.remove(i);
+				break;
+			}
+			i++;
+		}
+
+	}
 	
 
-	public void addGameElement(GameElement GameElement){
-		gui.addImage(GameElement);
-		
-	}
-
+//	public void addGameElement(Point2D point, GameElement element2){
+//		GameElement element = getGameElement(point);
+//		
+//		int i = 0;
+//		for (GameElement tile : tileList) {
+//			if(point.equals(tile.getPosition())){
+//				tileList.add(i, element2);
+//				gui.addImage(element2);
+//
+//				break;
+//			}
+//			i++;
+//		}
+//
+//	}
 	// Reinicia o jogo
-	private void restart(){
+ void restart(){
+		deleteFile();
 		gui.clearImages();
 		tileList.clear();
 		level = 1;
+		alvosAtingidos = 0;
+		NumAlvosNivel = 0;
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
 		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
@@ -154,6 +190,23 @@ public class GameEngine implements Observer {
 		bateria = bobcat.getBateria();
 		gui.update();
 
+		// Escrever uma mensagem na StatusBar
+		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
+		
+	}
+	private void nextLevel(){
+		registerLevels();
+		gui.clearImages();
+		tileList.clear();
+		level++;
+		alvosAtingidos = 0;
+		NumAlvosNivel = 0;
+		getFloorScheme();
+		createWarehouse();      // criar o armazem
+		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
+		sendImagesToGUI();      // enviar as imagens para a GUI
+		bateria = bobcat.getBateria();
+		gui.update();
 		// Escrever uma mensagem na StatusBar
 		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
 		
@@ -166,12 +219,19 @@ public class GameEngine implements Observer {
 			for (int x=0; x<GRID_HEIGHT; x++) {
 				switch(floorScheme[y][x]) {
 					
-				case ' ': 									
-				tileList.add(new Chao(new Point2D(x,y)));break;	
+				case ' ':
+					tileList.add(new Chao(new Point2D(x,y)));
+					break;
 					case 'X':
-					tileList.add(new Alvo(new Point2D(x,y)));break;	
+					tileList.add(new Alvo(new Point2D(x,y)));
+					NumAlvosNivel++;
+					break;	
+					
 				case 'C':
-					tileList.add(new Caixote(new Point2D(x,y)));	break;				
+					tileList.add(new Caixote(new Point2D(x,y), false));
+					tileList.add(new Chao(new Point2D(x,y)));
+
+					break;				
 				case '#':	
 				tileList.add(new Parede(new Point2D(x,y)));break;
 				case 'B':
@@ -194,6 +254,7 @@ public class GameEngine implements Observer {
 					break;
 				
 				}
+
 			}
 			}
 		}
@@ -206,6 +267,30 @@ public class GameEngine implements Observer {
 				}
 			}
 			return 0;
+		}
+		
+		public void deleteFile() {
+		      File file = new File("pontuacao.txt");
+		      file.delete();
+		}
+		
+		public void registerLevels() {
+		    File file = new File("pontuacao.txt");
+		    try {
+		        if (file.createNewFile()) {
+		            System.out.println("File created: " + file.getName());
+		        } else {
+		            System.out.println("File already exists.");
+		        }
+
+		        try (BufferedWriter output = new BufferedWriter(new FileWriter(file, true))) {
+		            output.write("Level:" + this.level + "::pontuacao:" + this.bateria);
+		            output.newLine();  // Adds a new line for each entry
+		        }
+		    } catch (IOException e) {
+		        System.out.println("An error occurred.");
+		        e.printStackTrace();
+		    }
 		}
 
 	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes

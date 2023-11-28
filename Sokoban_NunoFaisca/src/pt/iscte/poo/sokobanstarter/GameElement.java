@@ -1,9 +1,10 @@
 package pt.iscte.poo.sokobanstarter;
 
 import pt.iscte.poo.gui.ImageTile;
+import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public abstract class GameElement implements ImageTile{
+public abstract class GameElement implements ImageTile {
 	
 	private Point2D Point2D;
 	
@@ -25,5 +26,7 @@ public abstract class GameElement implements ImageTile{
 
 	@Override
 	public abstract int getLayer() ;
+
+	public abstract void move(Direction direction);
 
 }
