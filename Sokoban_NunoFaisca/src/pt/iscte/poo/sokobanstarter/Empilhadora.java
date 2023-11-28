@@ -40,7 +40,24 @@ public class Empilhadora extends GameElement {
 
 
 	
-	
+	public void rotateImage(Direction dir) {
+		switch (dir) {
+		case DOWN:
+		imageName = FORKLIFT_DOWN;
+		break;
+		case UP:
+		imageName = FORKLIFT_UP;
+		break;
+		case LEFT:
+		imageName = FORKLIFT_LEFT;
+		break;
+		case RIGHT:
+		imageName = FORKLIFT_RIGHT;
+		break;
+		default:
+		break;
+	}
+	}
 	//TODO implementar o movimento da empelhadora
 	public void move(Direction dir) {
 		
@@ -51,22 +68,7 @@ public class Empilhadora extends GameElement {
 		Direction randomDirection = possibleDirections[randomNumber];
 		*/
 		// Move segundo a direcao gerada, mas so' se estiver dentro dos limites
-		switch (dir) {
-			case DOWN:
-			imageName = FORKLIFT_DOWN;
-			break;
-			case UP:
-			imageName = FORKLIFT_UP;
-			break;
-			case LEFT:
-			imageName = FORKLIFT_LEFT;
-			break;
-			case RIGHT:
-			imageName = FORKLIFT_RIGHT;
-			break;
-			default:
-			break;
-		}
+		
 		Point2D newPosition = position.plus(dir.asVector());
 		position = newPosition;
 	}

@@ -13,7 +13,7 @@ public class Caixote extends GameElement {
 		super(initialposition);
 		position = initialposition;
 		imageName = "Caixote";
-		this.alvo = alvo;
+		this.setAlvo(alvo);
 
 	}
 
@@ -37,24 +37,17 @@ public class Caixote extends GameElement {
 	public void move(Direction dir) {
 		Point2D newPosition = position.plus(dir.asVector());
 		GameEngine instance = GameEngine.getInstance();
-		
-			GameElement element = instance.getGameElement(newPosition);
-
-			if(element.getLayer() == 0){
-				if(alvo == true) {
-					alvo = false;
-					instance.alvosAtingidos--;
-				}
-				if(element.getName() == "Alvo") {
-					alvo = true;
-					instance.alvosAtingidos++;
-
-				}
-				instance.addGameElement(newPosition, new Caixote(newPosition, alvo));
-				instance.removeGameElement(position);
-				
-				
-		}
+		instance.addGameElement(newPosition, new Caixote(newPosition, this.alvo));
+		instance.removeGameElement(position);
 	}
-	
+
+	public boolean isAlvo() {
+		return alvo;
+	}
+
+	public void setAlvo(boolean alvo) {
+		this.alvo = alvo;
+	}
 }
+	
+

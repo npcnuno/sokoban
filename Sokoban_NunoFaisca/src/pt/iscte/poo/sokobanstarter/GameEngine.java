@@ -78,14 +78,15 @@ public class GameEngine implements Observer  {
 		gui.setSize(GRID_HEIGHT, GRID_WIDTH);  // 2. configurar as dimensoes 
 		gui.registerObserver(this);            // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go();                              // 4. lancar a GUI
-		
+		deleteFile();
+
 		// Criar o cenario de jogo
 		
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
 		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
-		bateria = bobcat.getBateria();
+		bateria = 100;
 		
 		// Escrever uma mensagem na StatusBar
 		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
@@ -97,16 +98,14 @@ public class GameEngine implements Observer  {
 	public void update(Observed source) {
 
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
-		
 		/*if (key == KeyEvent.VK_ENTER)// se a tecla for ENTER, manda a empilhadora mover*/
 		Direction dir = Teclado.Key_Pressed(key);		
 		if(dir != null){
 			GameMoves gameMoves = new GameMoves();
 			gameMoves.isValid(dir, bobcat);
-			bobcat.move(dir);
+			bobcat.rotateImage(dir);
 		}
 		gui.update();
-		bateria = bobcat.getBateria();
 		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
 		if( bateria <=  0) {
 				restart();
@@ -129,6 +128,10 @@ public class GameEngine implements Observer  {
 				}
 			}
 		return null;
+	}
+	
+	public void setBattery(int value) {
+		this.bateria = this.bateria + value;
 	}
 
 	public void addGameElement(Point2D point, GameElement element2){
@@ -199,13 +202,13 @@ public class GameEngine implements Observer  {
 		gui.clearImages();
 		tileList.clear();
 		level++;
+		bateria = 100;
 		alvosAtingidos = 0;
 		NumAlvosNivel = 0;
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
 		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
-		bateria = bobcat.getBateria();
 		gui.update();
 		// Escrever uma mensagem na StatusBar
 		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
