@@ -16,13 +16,8 @@ public class Parede extends GameElement {
 
 	@Override
 	public int getLayer() {
-		return 1;
+		return 2;
 	}
 
-	@Override
-	public void move(Direction direction) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'move'");
-	}
 
 }

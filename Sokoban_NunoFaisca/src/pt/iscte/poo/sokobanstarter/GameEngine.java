@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,9 +38,9 @@ import pt.iscte.poo.utils.Point2D;
 
 public class GameEngine implements Observer  {
 	
-	private int level = 1;
-
-
+	private int level = 5;
+	public boolean temMartelo = false;
+	public boolean GameOver = false;
 	// Dimensoes da grelha de jogo
 	public static final int GRID_HEIGHT = 10;
 	public static final int GRID_WIDTH = 10;
@@ -53,12 +55,10 @@ public class GameEngine implements Observer  {
 	public int bateria;
 	public int alvosAtingidos = 0;
 	private int NumAlvosNivel = 0;
-	//private GameMoves gameMoves; // Add this line to declare the gameMoves instance
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
 		tileList = new ArrayList<>();
-		//gameMoves = new GameMoves(); // Instantiate the gameMoves instance
 	}
 
 	// Implementacao do singleton para o GameEngine
@@ -84,12 +84,13 @@ public class GameEngine implements Observer  {
 		
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
-		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
+		tileList.sort(Comparator.comparing(GameElement::getName).reversed());
+		tileList.sort(Comparator.comparing(GameElement::getLayer));
 		sendImagesToGUI();      // enviar as imagens para a GUI
 		bateria = 100;
-		
+
 		// Escrever uma mensagem na StatusBar
-		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
+		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria + " || Martelo: " + temMartelo);
 	}
 
 	// O metodo update() e' invocado automaticamente sempre que o utilizador carrega numa tecla
@@ -98,21 +99,24 @@ public class GameEngine implements Observer  {
 	public void update(Observed source) {
 
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
-		/*if (key == KeyEvent.VK_ENTER)// se a tecla for ENTER, manda a empilhadora mover*/
 		Direction dir = Teclado.Key_Pressed(key);		
-		if(dir != null){
-			GameMoves gameMoves = new GameMoves();
-			gameMoves.isValid(dir, bobcat);
-			bobcat.rotateImage(dir);
+		
+		if(dir != null && !GameOver){
+			bobcat.move(dir);
+			gui.update();
+			System.out.print("\n"+ alvosAtingidos + "\n");
+			gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria + " || Martelo: " + temMartelo);
+			if( bateria <=  0) {
+					restart();
+			}
+			if(alvosAtingidos == NumAlvosNivel) {
+				nextLevel();
+		
 		}
-		gui.update();
-		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
-		if( bateria <=  0) {
-				restart();
-		}
-		if(alvosAtingidos == NumAlvosNivel) {
-			nextLevel();
-		}
+		if(GameOver)
+			gui.setStatusMessage("GameOver");
+
+}
 			
 			
 
@@ -120,20 +124,52 @@ public class GameEngine implements Observer  {
 		// redesenha a lista de ImageTiles na GUI, 
 		// tendo em conta as novas posicoes dos objetos
 	}
-	public GameElement getGameElement(Point2D point){
-
-		for (GameElement tile : tileList) {
-				if(point.equals(tile.getPosition())){
-					return tile;
-				}
-			}
-		return null;
-	}
+	public GameElement getGameElement(Point2D point) {
+		List<GameElement> elementList = new ArrayList<>();
+	    for (GameElement element : tileList) {
+	       if(point.equals(element.getPosition())) {	
+	    	   elementList.add(element);
+	    	 }
+	    }
+	    if(elementList.size() ==1)
+	    	return elementList.get(0);
+	    
+	    for(GameElement element : elementList) {
+	    	if(element.getLayer() == 1)
+	    		return element;
+	    }
+	    for(GameElement element : elementList) {
+	    	if(element.getLayer() == 0 && !element.getName().equals("Buraco"))
+	    		return element;
+	    }
+	    for(GameElement element : elementList) {
+	    	if(element.getLayer() == 0)
+	    		return element;
+	    }
+	    
+	    return null;
+	    
+	} 
 	
 	public void setBattery(int value) {
 		this.bateria = this.bateria + value;
 	}
+	public void setMartelo(boolean value) {
+		this.temMartelo = value;
+	}
+	
+	public Point2D searchTypeOfGameElement(Point2D point, String name){
+		
+		for (GameElement tile : tileList) {
+			if(!point.equals(tile.getPosition()) && name.equals(tile.getName()) ){
+				return tile.getPosition();
+			}
+		}
+		return null;
 
+	}
+	
+	
 	public void addGameElement(Point2D point, GameElement element2){
 		
 		int i = 0;
@@ -190,7 +226,7 @@ public class GameEngine implements Observer  {
 		createWarehouse();      // criar o armazem
 		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
-		bateria = bobcat.getBateria();
+		bateria = 100;
 		gui.update();
 
 		// Escrever uma mensagem na StatusBar
@@ -207,7 +243,6 @@ public class GameEngine implements Observer  {
 		NumAlvosNivel = 0;
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
-		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
 		gui.update();
 		// Escrever uma mensagem na StatusBar
@@ -225,27 +260,33 @@ public class GameEngine implements Observer  {
 				case ' ':
 					tileList.add(new Chao(new Point2D(x,y)));
 					break;
-					case 'X':
+				case 'X':
 					tileList.add(new Alvo(new Point2D(x,y)));
 					NumAlvosNivel++;
 					break;	
 					
 				case 'C':
-					tileList.add(new Caixote(new Point2D(x,y), false));
+					tileList.add(new Caixote(new Point2D(x,y)));
 					tileList.add(new Chao(new Point2D(x,y)));
 
 					break;				
 				case '#':	
-				tileList.add(new Parede(new Point2D(x,y)));break;
+					tileList.add(new Parede(new Point2D(x,y)));break;
 				case 'B':
-					//tileList.add(new Chao(new Point2D(x,y)));
-					tileList.add(new Bateria(new Point2D(x,y)));break;	
+					tileList.add(new Bateria(new Point2D(x,y), 100));break;	
 				case 'O':
 					tileList.add(new Buraco(new Point2D(x,y)));break;	
 				case 'P':
-					tileList.add(new Palete(new Point2D(x,y)));break;	
+					tileList.add(new Palete(new Point2D(x,y)));
+					tileList.add(new Chao(new Point2D(x,y)));
+
+					break;
+					
 				case 'M':
-					tileList.add(new Martelo(new Point2D(x,y)));break;
+
+					tileList.add(new Martelo(new Point2D(x,y)));
+
+					break;
 				case '%':
 					tileList.add(new ParedeRachada(new Point2D(x,y)));break;
 				case 'T':
@@ -296,15 +337,6 @@ public class GameEngine implements Observer  {
 		    }
 		}
 
-	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes
-	/*private void createMoreStuff() {
-		//bobcat = new Empilhadora( new Point2D(5,5));
-		//tileList.add(bobcat);
-
-		tileList.add(new Caixote(new Point2D(3,3)));
-		tileList.add(new Caixote(new Point2D(3,2)));
-	}*/
-
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
 	private void sendImagesToGUI() {
@@ -315,7 +347,6 @@ public class GameEngine implements Observer  {
 		gui.addImages(imageTileList);
 	}
 	
-	//extrair esquema
 	private void getFloorScheme() {
 		File file = new File("./levels/level"+level+".txt");
 		
@@ -331,7 +362,6 @@ public class GameEngine implements Observer  {
 		    }
 		    sc.close();
 
-		    // Debug: Print each element of floorScheme
 		    for (int r = 0; r < floorScheme.length; r++) {
 		        for (int c = 0; c < floorScheme[r].length; c++) {
 		            System.out.print(floorScheme[r][c] + " ");
@@ -344,4 +374,5 @@ public class GameEngine implements Observer  {
 		}
 
 	}
+	
 }

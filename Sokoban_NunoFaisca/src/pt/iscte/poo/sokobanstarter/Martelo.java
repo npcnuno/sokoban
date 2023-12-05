@@ -5,10 +5,12 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Martelo extends GameElement {
 
-	
+	private Point2D position;
+	int layer;
 	public Martelo(Point2D position) {
 		super(position);
-
+		this.position = position;
+		layer = 0;
 	}
 
     @Override
@@ -18,13 +20,21 @@ public class Martelo extends GameElement {
 
 	@Override
 	public int getLayer() {
-		return 1;
+		return layer;
 	}
-
+	public void setLayer(int value) {
+		this.layer = value;
+	}
+	
 	@Override
-	public void move(Direction direction) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'move'");
+	public Point2D getPosition() {
+		return position;
+	}
+	@Override
+	public boolean remove() {
+		GameEngine instance = GameEngine.getInstance();
+		instance.setMartelo(true);
+		return true;
 	}
 
 }

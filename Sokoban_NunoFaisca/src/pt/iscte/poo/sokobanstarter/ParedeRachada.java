@@ -18,13 +18,19 @@ public class ParedeRachada extends GameElement {
 
 	@Override
 	public int getLayer() {
-		return 1;
+		return 2;
 	}
 
 	@Override
-	public void move(Direction direction) {
+	public void move(Direction dirtion) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'move'");
+	}
+	public boolean remove() {
+		GameEngine instance = GameEngine.getInstance();
+		instance.setBattery(-1);
+		instance.setMartelo(false);
+		return true;
 	}
 
 	

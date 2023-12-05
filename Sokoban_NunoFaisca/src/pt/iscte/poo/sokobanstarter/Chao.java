@@ -29,10 +29,4 @@ public class Chao extends GameElement {
 	public Point2D getPosition(){
 		return position;
 	}
-
-	@Override
-	public void move(Direction direction) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'move'");
-	}
 }

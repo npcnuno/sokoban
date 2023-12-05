@@ -5,10 +5,11 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Buraco extends GameElement {
 
+	private Point2D position;
 	
 	public Buraco(Point2D position) {
 		super(position);
-
+		this.position = position;		
 	}
 
     @Override
@@ -20,11 +21,13 @@ public class Buraco extends GameElement {
 	public int getLayer() {
 		return 0;
 	}
+	
 
-	@Override
-	public void move(Direction direction) {
-		throw new UnsupportedOperationException("Unimplemented method 'move'");
-	}
+	
+	
+	
+
+
 
 
 }

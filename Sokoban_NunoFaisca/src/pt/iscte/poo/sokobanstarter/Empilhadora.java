@@ -10,14 +10,12 @@ public class Empilhadora extends GameElement {
 
 	private Point2D position;
 	private String imageName;
-	private int bateria;
 	
 	
 	public Empilhadora(Point2D initialPosition){
 		super(initialPosition);
 		position = initialPosition;
 		imageName = FORKLIFT_DOWN;
-		bateria  = 100;
 	}
 	
 	@Override
@@ -29,18 +27,12 @@ public class Empilhadora extends GameElement {
 	public Point2D getPosition() {
 		return position;
 	}
-
 	@Override
 	public int getLayer() {
 		return 2;
 	}
 	
-	public int getBateria() { return this.bateria; }
-	
-
-
-	
-	public void rotateImage(Direction dir) {
+	public void move(Direction dir) {
 		switch (dir) {
 		case DOWN:
 		imageName = FORKLIFT_DOWN;
@@ -57,19 +49,87 @@ public class Empilhadora extends GameElement {
 		default:
 		break;
 	}
-	}
-	//TODO implementar o movimento da empelhadora
-	public void move(Direction dir) {
-		
-		// Gera uma direcao aleatoria para o movimento
-		/*Direction[] possibleDirections = Direction.values();
-		Random randomizer = new Random();
-		int randomNumber = randomizer.nextInt(possibleDirections.length);
-		Direction randomDirection = possibleDirections[randomNumber];
-		*/
-		// Move segundo a direcao gerada, mas so' se estiver dentro dos limites
-		
 		Point2D newPosition = position.plus(dir.asVector());
-		position = newPosition;
+		GameEngine instance = GameEngine.getInstance();
+		
+		instance.setBattery(-1);
+		GameElement fowardElement = instance.getGameElement(newPosition);
+		
+		if(isValid(dir)){
+			System.out.print(fowardElement.getName());
+			if(fowardElement.getLayer()==1) {
+				if(fowardElement.isValid(dir)) {
+					fowardElement.move(dir);
+					 fowardElement = instance.getGameElement(newPosition);
+					 if(fowardElement.getLayer()==1)
+						 return;
+					System.out.print(fowardElement.getName());
+					position = newPosition;
+					
+					
+				}
+			}else {
+				if(fowardElement.remove()) {
+					instance.removeGameElement(newPosition);
+					position = newPosition;
+					instance.addGameElement(newPosition,new Chao(newPosition));
+					return;
+				}
+				if(fowardElement.getName().equals("Teleporte")) {
+					
+					Point2D oldPosition = position;
+					
+					position = instance.searchTypeOfGameElement(newPosition, "Teleporte");
+					newPosition = position.plus(dir.asVector());
+					
+					
+					
+					
+					if(instance.getLayer(newPosition) <= 1) {
+						move(dir);
+					}else {
+						position = oldPosition;
+						
+						return;
+					}
+				}
+				
+				
+				if(fowardElement.getName().equals("Buraco")) {
+					instance.GameOver = true;
+				}
+				position = newPosition;
+
+				
+			}
+				
+		}
+			
+
 	}
+	
+	@Override
+	public boolean isValid(Direction dir) {
+		Point2D newPosition = position.plus(dir.asVector());
+		GameEngine instance = GameEngine.getInstance();
+		GameElement fowardElement = instance.getGameElement(newPosition);
+
+		if (newPosition.getX()>=0 && newPosition.getX()<10 && 
+			newPosition.getY()>=0 && newPosition.getY()<10){
+					if(instance.getLayer(newPosition) <= 1){
+						return true;
+					} else if( instance.getLayer(newPosition) == 2 && fowardElement.getName().equals("ParedeRachada") && instance.temMartelo) {
+						return true;
+					}
+					
+				}
+		return false;
+}
+
+	
+
+
+
+
+	
 }

@@ -22,13 +22,6 @@ public class Alvo extends GameElement {
 		return 0;
 	}
 
-	@Override
-	public void move(Direction direction) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'move'");
-	}
-
-
 
 
 }
