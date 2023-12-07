@@ -7,7 +7,7 @@ import pt.iscte.poo.utils.Direction;
 public class Teclado {
     
         public static Direction  Key_Pressed(int key) {
-        	
+
         
         if(key == KeyEvent.VK_LEFT ||  key == KeyEvent.VK_KP_LEFT || key == KeyEvent.VK_A)
             return Direction.LEFT;
@@ -19,16 +19,35 @@ public class Teclado {
             return Direction.DOWN;
         if(key == KeyEvent.VK_R)
         	restart();
+        if(key == KeyEvent.VK_N )
+        	nextLevel();
+        if(key == KeyEvent.VK_Q )
+        	quit();
+        	
         	
         return null;
-        // redesenha a lista de ImageTiles na GUI, 
-        // tendo em conta as novas posicoes dos objetos
     }
 
 
 public static void restart() {
 	GameEngine instance = GameEngine.getInstance();
-	instance.restart();
+	instance.restartLevel();
+}
+
+public static void nextLevel() {
+	GameEngine instance = GameEngine.getInstance();
+	if(instance.wonGame)
+		instance.restartGame();
+
+	if(instance.PassedLevel && !instance.wonGame)
+		instance.nextLevel();
+}
+
+public static void quit() {
+	GameEngine instance = GameEngine.getInstance();
+	
+	if(instance.wonGame)
+		instance.restartGame();
 }
 
 }

@@ -56,56 +56,42 @@ public class Empilhadora extends GameElement {
 		GameElement fowardElement = instance.getGameElement(newPosition);
 		
 		if(isValid(dir)){
-			System.out.print(fowardElement.getName());
-			if(fowardElement.getLayer()==1) {
+
+			
+			
+			if(fowardElement.MobilityStatus().equals(MOVABLE)) {
 				if(fowardElement.isValid(dir)) {
+					
+					
+					
 					fowardElement.move(dir);
-					 fowardElement = instance.getGameElement(newPosition);
-					 if(fowardElement.getLayer()==1)
-						 return;
+
+					
+					//CHECK IF THE OBJECT MOVED IF NOT RETURN
+					fowardElement = instance.getGameElement(newPosition);
 					System.out.print(fowardElement.getName());
-					position = newPosition;
+
 					
 					
 				}
-			}else {
-				if(fowardElement.remove()) {
+				if(fowardElement.MobilityStatus().equals(MOVABLE))
+					 return;
+			}
+
+
+			if(fowardElement.remove()) {
 					instance.removeGameElement(newPosition);
 					position = newPosition;
 					instance.addGameElement(newPosition,new Chao(newPosition));
 					return;
 				}
-				if(fowardElement.getName().equals("Teleporte")) {
-					
-					Point2D oldPosition = position;
-					
-					position = instance.searchTypeOfGameElement(newPosition, "Teleporte");
-					newPosition = position.plus(dir.asVector());
-					
-					
-					
-					
-					if(instance.getLayer(newPosition) <= 1) {
-						move(dir);
-					}else {
-						position = oldPosition;
-						
-						return;
-					}
+			if(fowardElement.isHole(newPosition, dir) != null) {
+					position = fowardElement.isHole(newPosition, dir);
+					return;
 				}
-				
-				
-				if(fowardElement.getName().equals("Buraco")) {
-					instance.GameOver = true;
-				}
-				position = newPosition;
+			position = newPosition;		
 
-				
-			}
-				
 		}
-			
-
 	}
 	
 	@Override
@@ -116,9 +102,9 @@ public class Empilhadora extends GameElement {
 
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && 
 			newPosition.getY()>=0 && newPosition.getY()<10){
-					if(instance.getLayer(newPosition) <= 1){
+					if(fowardElement.MobilityStatus().equals(MOVABLE) || fowardElement.MobilityStatus().equals(FLOOR)){
 						return true;
-					} else if( instance.getLayer(newPosition) == 2 && fowardElement.getName().equals("ParedeRachada") && instance.temMartelo) {
+					} else if( fowardElement.MobilityStatus().equals(STATIC) && fowardElement.getName().equals("ParedeRachada") && instance.temMartelo) {
 						return true;
 					}
 					

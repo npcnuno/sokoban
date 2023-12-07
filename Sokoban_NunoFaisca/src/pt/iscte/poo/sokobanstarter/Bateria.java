@@ -7,11 +7,13 @@ public class Bateria extends GameElement {
 	
 	private int nivelbateria;
 	private Point2D position;
+
 	
 	public Bateria(Point2D position, int nivelBateria) {
 		super(position);
 		this.position = position;
 		nivelbateria = nivelBateria;
+		setObjectMobilityStatus(FLOOR);
 	}
 
 	@Override

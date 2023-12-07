@@ -7,10 +7,14 @@ public class Martelo extends GameElement {
 
 	private Point2D position;
 	int layer;
+	protected String MobilityStatus = FLOOR;
+
 	public Martelo(Point2D position) {
 		super(position);
 		this.position = position;
 		layer = 0;
+		setObjectMobilityStatus(FLOOR);
+
 	}
 
     @Override

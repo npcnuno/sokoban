@@ -7,6 +7,8 @@ public class Chao extends GameElement {
 
 	private Point2D position;
 	private String imageName;
+	protected String MobilityStatus = FLOOR;
+
 
 
 		
@@ -14,6 +16,7 @@ public class Chao extends GameElement {
 		super(initialPosition);
 		this.position = initialPosition;
 		imageName = "Chao";
+		setObjectMobilityStatus(FLOOR);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ public class Caixote extends GameElement {
 	private String imageName;
 	private boolean noAlvo;
 	private int layer;
+
 	
 	public Caixote(Point2D initialposition) {
 		super(initialposition);
@@ -16,7 +17,9 @@ public class Caixote extends GameElement {
 		imageName = "Caixote";
 		noAlvo = false;
 		layer = 1;
+		setObjectMobilityStatus(MOVABLE);
 
+		
 	}
 
 	@Override
@@ -51,55 +54,38 @@ public class Caixote extends GameElement {
 		Point2D newPosition = position.plus(dir.asVector());
 		GameEngine instance = GameEngine.getInstance();
 		GameElement fowardElement = instance.getGameElement(newPosition);
-		System.out.print(fowardElement.getLayer() + "\n");
-
 		instance.setBattery(-1);
 		if(isValid(dir)){
 			 if(fowardElement.getName() == "Alvo") {
 					instance.alvosAtingidos++;
 					setAlvo(true);
-				 }else if(fowardElement.getName() == "Chao")
+				 } else if(fowardElement.getName() == "Chao")
 					 if(isAlvo() == true) {
 						 setAlvo(false);
 						 instance.alvosAtingidos--;
-		}
-			 if(fowardElement.getName().equals("Teleporte")) {
-					
-					Point2D oldPosition = position;
-					
-					position = instance.searchTypeOfGameElement(newPosition, "Teleporte");
-					newPosition = position.plus(dir.asVector());
-					
-					if(instance.getLayer(newPosition) <= 0) {
-						move(dir);
-					}else {
-						position = oldPosition;
-						
-						return;
-					}
+					 }
+			 if(fowardElement.isHole(newPosition, dir) != null) {
+					position = fowardElement.isHole(newPosition, dir);
+					return;
 				}
-		if(fowardElement.getName().equals("Buraco")) {
-			instance.GameOver = true;
-		}
-			position = newPosition;
+			 position = newPosition;
+
 		}
 	}
-	
-	
 	@Override
 	public boolean isValid(Direction dir) {
 			Point2D newPosition = position.plus(dir.asVector());
 			GameEngine instance = GameEngine.getInstance();
+			GameElement fowardElement = instance.getGameElement(newPosition);
 			if (newPosition.getX()>=0 && newPosition.getX()<10 && 
 				newPosition.getY()>=0 && newPosition.getY()<10){
-						if(instance.getLayer(newPosition) == 0){
+						if(fowardElement.MobilityStatus().equals(FLOOR)){
 							return true;
 							}
 						}
 				return false;
-	
 	}
-	
+
 }
 	
 

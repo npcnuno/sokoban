@@ -38,9 +38,20 @@ import pt.iscte.poo.utils.Point2D;
 
 public class GameEngine implements Observer  {
 	
-	private int level = 5;
+	protected static String STATIC = "StaticObject";
+	protected static String FLOOR = "FloorObject";
+	public static String MOVABLE = "MovableObject";
+
+	
+	
+	private int level = 0;
+	private int lastLevel = 0;
 	public boolean temMartelo = false;
 	public boolean GameOver = false;
+	public boolean PassedLevel = false;
+	public boolean wonGame = false;
+	private String username;
+
 	// Dimensoes da grelha de jogo
 	public static final int GRID_HEIGHT = 10;
 	public static final int GRID_WIDTH = 10;
@@ -67,21 +78,20 @@ public class GameEngine implements Observer  {
 			return INSTANCE = new GameEngine();
 		return INSTANCE;
 	}
-
 	// Inicio
 	public void start() {
 
 		// Setup inicial da janela que faz a interface com o utilizador
 		// algumas coisas poderiam ser feitas no main, mas estes passos tem sempre que ser feitos!
-		
+		this.lastLevel = getLastLevelNumber(lastLevel);
 		gui = ImageMatrixGUI.getInstance();    // 1. obter instancia ativa de ImageMatrixGUI	
 		gui.setSize(GRID_HEIGHT, GRID_WIDTH);  // 2. configurar as dimensoes 
 		gui.registerObserver(this);            // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go();                              // 4. lancar a GUI
-		deleteFile();
-
+		System.out.print(lastLevel);
 		// Criar o cenario de jogo
-		
+		gui.setMessage("The controls of the game are WASD or any arrow keys");
+		username = gui.askUser("Enter your username: \n After press any arrow Key or any WASD key");
 		getFloorScheme();
 		createWarehouse();      // criar o armazem
 		tileList.sort(Comparator.comparing(GameElement::getName).reversed());
@@ -90,7 +100,7 @@ public class GameEngine implements Observer  {
 		bateria = 100;
 
 		// Escrever uma mensagem na StatusBar
-		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria + " || Martelo: " + temMartelo);
+		gui.setStatusMessage(getBestLevelScores()+" || Level " + level + " || Bateria: " + bateria + " || Martelo: " + temMartelo);
 	}
 
 	// O metodo update() e' invocado automaticamente sempre que o utilizador carrega numa tecla
@@ -99,30 +109,39 @@ public class GameEngine implements Observer  {
 	public void update(Observed source) {
 
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
-		Direction dir = Teclado.Key_Pressed(key);		
+		Direction dir = Teclado.Key_Pressed(key);	
 		
-		if(dir != null && !GameOver){
+		
+		if(dir != null && !GameOver && !PassedLevel && !wonGame){
 			bobcat.move(dir);
 			gui.update();
-			System.out.print("\n"+ alvosAtingidos + "\n");
-			gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria + " || Martelo: " + temMartelo);
+			gui.setStatusMessage(getBestLevelScores()+" || Level " + level + " || Bateria: " + bateria + " || Martelo: " + temMartelo);
 			if( bateria <=  0) {
-					restart();
+					restartLevel();
 			}
 			if(alvosAtingidos == NumAlvosNivel) {
-				nextLevel();
-		
+				PassedLevel = true;
+			if(PassedLevel && this.level >= lastLevel) {
+				wonGame = true;
+				System.out.print(wonGame);
+			}
+
 		}
-		if(GameOver)
-			gui.setStatusMessage("GameOver");
+		if(GameOver) {
+			gui.setStatusMessage("Game Over || press R to restart level");
+			gui.setMessage(getUsersBestScores());
+		}
+		if(PassedLevel) {
+			gui.setStatusMessage("Passed Level || press N to continue");
+			gui.setMessage(getAllBestLevelScores());
+		}
+		if(wonGame) {
+			gui.setStatusMessage("You Won || press N to continue");
+			gui.setMessage(getUsersBestScores());
+
+		}
 
 }
-			
-			
-
-		
-		// redesenha a lista de ImageTiles na GUI, 
-		// tendo em conta as novas posicoes dos objetos
 	}
 	public GameElement getGameElement(Point2D point) {
 		List<GameElement> elementList = new ArrayList<>();
@@ -131,19 +150,21 @@ public class GameEngine implements Observer  {
 	    	   elementList.add(element);
 	    	 }
 	    }
+		elementList.sort(Comparator.comparing(GameElement::getLayer).reversed());
+
 	    if(elementList.size() ==1)
 	    	return elementList.get(0);
 	    
 	    for(GameElement element : elementList) {
-	    	if(element.getLayer() == 1)
+	    	if(element.MobilityStatus().equals(MOVABLE))
 	    		return element;
 	    }
 	    for(GameElement element : elementList) {
-	    	if(element.getLayer() == 0 && !element.getName().equals("Buraco"))
+	    	if(element.MobilityStatus().equals(MOVABLE) && !element.getName().equals("Buraco"))
 	    		return element;
 	    }
 	    for(GameElement element : elementList) {
-	    	if(element.getLayer() == 0)
+	    	if(element.MobilityStatus().equals(STATIC) || element.MobilityStatus().equals(FLOOR))
 	    		return element;
 	    }
 	    
@@ -168,8 +189,6 @@ public class GameEngine implements Observer  {
 		return null;
 
 	}
-	
-	
 	public void addGameElement(Point2D point, GameElement element2){
 		
 		int i = 0;
@@ -195,31 +214,11 @@ public class GameEngine implements Observer  {
 			}
 			i++;
 		}
-
 	}
-	
-
-//	public void addGameElement(Point2D point, GameElement element2){
-//		GameElement element = getGameElement(point);
-//		
-//		int i = 0;
-//		for (GameElement tile : tileList) {
-//			if(point.equals(tile.getPosition())){
-//				tileList.add(i, element2);
-//				gui.addImage(element2);
-//
-//				break;
-//			}
-//			i++;
-//		}
-//
-//	}
-	// Reinicia o jogo
- void restart(){
-		deleteFile();
+	// Reinicia o nível
+ public void restartLevel(){
 		gui.clearImages();
 		tileList.clear();
-		level = 1;
 		alvosAtingidos = 0;
 		NumAlvosNivel = 0;
 		getFloorScheme();
@@ -230,10 +229,10 @@ public class GameEngine implements Observer  {
 		gui.update();
 
 		// Escrever uma mensagem na StatusBar
-		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
+		gui.setStatusMessage(getBestLevelScores()+" || Level " + level + " || Bateria: " + bateria + " || Martelo: " + temMartelo);
 		
-	}
-	private void nextLevel(){
+}
+	public void nextLevel(){
 		registerLevels();
 		gui.clearImages();
 		tileList.clear();
@@ -246,7 +245,24 @@ public class GameEngine implements Observer  {
 		sendImagesToGUI();      // enviar as imagens para a GUI
 		gui.update();
 		// Escrever uma mensagem na StatusBar
-		gui.setStatusMessage("Sokoban Level " + level + " || bateria: " + bateria);
+		gui.setStatusMessage(getBestLevelScores()+" || Level " + level + " || bateria: " + bateria + " || Martelo: " + temMartelo);
+		
+	}
+	public void restartGame() {
+		level = 1;
+		gui.clearImages();
+		tileList.clear();
+		alvosAtingidos = 0;
+		NumAlvosNivel = 0;
+		getFloorScheme();
+		createWarehouse();      // criar o armazem
+		//createMoreStuff();// criar mais algun objetos (empilhadora, caixotes,...)
+		sendImagesToGUI();      // enviar as imagens para a GUI
+		bateria = 100;
+		gui.update();
+
+		// Escrever uma mensagem na StatusBar
+		gui.setStatusMessage(getBestLevelScores()+" || Level " + level + " || Bateria: " + bateria + " || Martelo: " + temMartelo);
 		
 	}
 
@@ -312,30 +328,142 @@ public class GameEngine implements Observer  {
 			}
 			return 0;
 		}
-		
-		public void deleteFile() {
-		      File file = new File("pontuacao.txt");
-		      file.delete();
-		}
-		
+				
 		public void registerLevels() {
-		    File file = new File("pontuacao.txt");
-		    try {
-		        if (file.createNewFile()) {
-		            System.out.println("File created: " + file.getName());
-		        } else {
-		            System.out.println("File already exists.");
-		        }
+			int bestScore = Integer.parseInt(getBestLevelScores().split(":", 2)[1].trim());
+			if(bestScore < bateria) {
+			    File file = new File("pontuacao.txt");
+			    try {
+			        if (file.createNewFile()) {
+			            System.out.println("File created: " + file.getName());
+			        } else {
+			            System.out.println("File already exists.");
+			        }
+	
+			        try (BufferedWriter output = new BufferedWriter(new FileWriter(file, true))) {
+			            output.write("Username:" + username + "| Level:" + this.level + "| Score:" + this.bateria);
+			            output.newLine();  // Adds a new line for each entry
+			        }
+			    } catch (IOException e) {
+			        System.out.println("An error occurred.");
+			        e.printStackTrace();
+			    }
+			}
+		}
 
-		        try (BufferedWriter output = new BufferedWriter(new FileWriter(file, true))) {
-		            output.write("Level:" + this.level + "::pontuacao:" + this.bateria);
-		            output.newLine();  // Adds a new line for each entry
+		public String getBestLevelScores() {
+		    int bestScore = 0;
+
+		    try (Scanner fileScanner = new Scanner(new File("pontuacao.txt"))) {
+		        while (fileScanner.hasNextLine()) {
+		            String[] parts = fileScanner.nextLine().split("\\|", 3); // usage of \\ for special caracter
+
+		            if (parts.length == 3) {
+		                String username = parts[0].split(":", 2)[1].trim();
+		                if(username.equals(this.username)) {
+			                int currentLevel = Integer.parseInt(parts[1].split(":", 2)[1].trim());
+			                int currentScore = Integer.parseInt(parts[2].split(":", 2)[1].trim());
+	
+			                if (currentLevel == level && currentScore > bestScore) {
+			                    bestScore = currentScore;
+			                }
+			    		    return username + ":" + bestScore;
+
+		                }
+		            }
 		        }
-		    } catch (IOException e) {
-		        System.out.println("An error occurred.");
+		    } catch (FileNotFoundException e) {
+		        System.out.println("An error occurred trying to retrieve the ScoresFile.");
 		        e.printStackTrace();
 		    }
+
+		    return"Username: " + username;
 		}
+		public String getAllBestLevelScores() {
+			List<String> usersBestScore = new ArrayList<>();
+		    try (Scanner fileScanner = new Scanner(new File("pontuacao.txt"))) {
+		        while (fileScanner.hasNextLine()) {
+		            String[] parts = fileScanner.nextLine().split("\\|", 3); // usage of \\ for special caracter
+
+		            if (parts.length == 3) {
+		                String username = parts[0].split(":", 2)[1].trim();
+			                int currentLevel = Integer.parseInt(parts[1].split(":", 2)[1].trim());
+			                int currentScore = Integer.parseInt(parts[2].split(":", 2)[1].trim());
+			                if(currentLevel == level)
+			                	usersBestScore.add("User(" + username + "): "+currentScore);
+
+		            }
+		        }
+		    } catch (FileNotFoundException e) {
+		        System.out.println("An error occurred trying to retrieve the ScoresFile.");
+		        e.printStackTrace();
+		    }
+		    String usersBestScoreString = "Best Scores of level " + level +"\n";
+		    
+		    for(String BestScore : usersBestScore) {
+		    	usersBestScoreString =  usersBestScoreString + BestScore + " \n " ;
+		    }
+		    return usersBestScoreString + "\n" + "Press N to continue";
+		    
+		}
+		public String getUsersBestScores() {
+			List<String> userScores = new ArrayList<>();
+		    try (Scanner fileScanner = new Scanner(new File("pontuacao.txt"))) {
+		        while (fileScanner.hasNextLine()) {
+		            String[] parts = fileScanner.nextLine().split("\\|", 3); // usage of \\ for special caracter
+
+		            if (parts.length == 3) {
+		                String username = parts[0].split(":", 2)[1].trim();
+			                int currentLevel = Integer.parseInt(parts[1].split(":", 2)[1].trim());
+			                int currentScore = Integer.parseInt(parts[2].split(":", 2)[1].trim());
+			                if(currentLevel == level)
+			                	userScores.add(username +": " + currentScore);
+			                
+
+		            }
+		        }
+		    } catch (FileNotFoundException e) {
+		        System.out.println("An error occurred trying to retrieve the ScoresFile.");
+		        e.printStackTrace();
+		    }
+		    List<String> userBestScores = new ArrayList<>();
+		    for (String scoreInfo : userScores) {
+		        String[] parts = scoreInfo.split(": ");
+		        String username = parts[0];
+		        int score = Integer.parseInt(parts[1]);
+
+		        boolean added = false;
+		        for (int i = 0; i < userBestScores.size(); i++) {
+		            String userScore = userBestScores.get(i);
+		            String existingUsername = userScore.split(": ")[0];
+		            int existingScore = Integer.parseInt(userScore.split(": ")[1]);
+
+		            if (username.equals(existingUsername)) {
+		                if (score > existingScore) {
+		                    userBestScores.set(i,username + ": " + score);
+		                }
+		                added = true;
+		                break;
+		            }
+		        }
+		        
+		        if (!added) {
+		            userBestScores.add(scoreInfo);
+		        }
+		    }
+		    String usersBestScoreString = " Sokoban Game Best Scores: \n";
+		    
+		    for(String BestScore : userBestScores) {
+		    	usersBestScoreString = usersBestScoreString + BestScore + " \n ";
+		    }
+
+
+		    return usersBestScoreString + " \n " + "Press N to continue";
+		    
+		}
+		
+		
+
 
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
@@ -346,6 +474,14 @@ public class GameEngine implements Observer  {
 		}
 		gui.addImages(imageTileList);
 	}
+	private int getLastLevelNumber(int level) {
+	    File file = new File("./levels/level" + level + ".txt");
+  
+	    if(file.exists()) 
+	        return getLastLevelNumber(level + 1);
+	     else 
+	        return level -1;
+	   }
 	
 	private void getFloorScheme() {
 		File file = new File("./levels/level"+level+".txt");

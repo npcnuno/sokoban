@@ -9,6 +9,8 @@ public class Alvo extends GameElement {
 
 	public Alvo(Point2D position) {
 		super(position);
+		setObjectMobilityStatus(FLOOR);
+
 
 	}
 
