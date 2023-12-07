@@ -23,6 +23,4 @@ public class Alvo extends GameElement {
 		return 0;
 	}
 
-
-
 }

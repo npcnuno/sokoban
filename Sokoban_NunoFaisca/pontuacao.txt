@@ -2343,3 +2343,10 @@ Username:gg| Level:0| Score:78
 Username:NUNO| Level:0| Score:78
 Username:NUNO| Level:1| Score:41
 Username:NUNO| Level:2| Score:4
+Username:nuno| Level:0| Score:69
+Username:nuno| Level:1| Score:165
+Username:nuno| Level:0| Score:72
+Username:w| Level:0| Score:75
+Username:w| Level:0| Score:77
+Username:w| Level:1| Score:120
+Username:ss| Level:1| Score:119

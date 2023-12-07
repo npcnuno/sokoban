@@ -1,14 +1,8 @@
 package pt.iscte.poo.sokobanstarter;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Scanner;
 
 
 import pt.iscte.poo.gui.ImageMatrixGUI;
@@ -28,7 +22,7 @@ public class GameEngine implements Observer  {
 
     // Game state variables
     private int level = 0;
-    private int lastLevel = getLastLevelNumber(level);
+    private int lastLevel = FileManagement.getLastLevelNumber(level);
     public boolean hasHammer = false; 
     public boolean GameOver = false;
     public boolean PassedLevel = false;
@@ -76,13 +70,13 @@ public class GameEngine implements Observer  {
 				+ "Press Q to quit and to restart the level");
 		username = gui.askUser("Enter your username: \n "
 				+ "After press any arrow Key or any WASD key");
-		getFloorSchema();
+		floorScheme = FileManagement.getFloorSchema();
 		createWarehouse();      // criar o armazem
 		tileList.sort(Comparator.comparing(GameElement::getName).reversed());
 		tileList.sort(Comparator.comparing(GameElement::getLayer));
 		sendImagesToGUI();      // enviar as imagens para a GUI
 		battery = 100;
-		gui.setStatusMessage(getBestLevelScores()+" || Level " + level + 
+		gui.setStatusMessage(FileManagement.getBestLevelScores()+" || Level " + level + 
 				" || Bateria: " + battery + " || Martelo: " + hasHammer);
 	}
 
@@ -103,7 +97,7 @@ public class GameEngine implements Observer  {
 		if (dir != null && !GameOver && !PassedLevel && !wonGame) {
 			bobcat.move(dir);
 			gui.update();
-			gui.setStatusMessage(getBestLevelScores() + " || Level " +
+			gui.setStatusMessage(FileManagement.getBestLevelScores() + " || Level " +
 					level + " || Bateria: " + battery + " || Martelo: " + hasHammer);
 
 			// Handle game over scenario
@@ -123,15 +117,15 @@ public class GameEngine implements Observer  {
 			// Update GUI messages based on game state (Game Over, Passed Level, Won Game)
 			if (GameOver) {
 				gui.setStatusMessage("Game Over || press R to restart level");
-				gui.setMessage(getUsersBestScores());
+				gui.setMessage(FileManagement.getUsersBestScores());
 			}
 			if (PassedLevel) {
 				gui.setStatusMessage("Passed Level || press N to continue");
-				gui.setMessage(getAllBestLevelScores());
+				gui.setMessage(FileManagement.getAllBestLevelScores());
 			}
 			if (wonGame) {
 				gui.setStatusMessage("You Won || press N to continue");
-				gui.setMessage(getUsersBestScores());
+				gui.setMessage(FileManagement.getUsersBestScores());
 			}
 		}
 	}
@@ -155,7 +149,7 @@ public class GameEngine implements Observer  {
 			sendImagesToGUI();      
 			setBattery(100);;
 			gui.update();
-			gui.setStatusMessage(getBestLevelScores()+" || Level " + 
+			gui.setStatusMessage(FileManagement.getBestLevelScores()+" || Level " + 
 			level + " || Bateria: " + getBattery() + " || Martelo: " + getHammer());
 			
 	}
@@ -165,9 +159,9 @@ public class GameEngine implements Observer  {
 	  * This method registers the levels, increments the level number, and restarts the level with the new layout.
 	  */
 		public void nextLevel(){
-			registerLevels();
+			FileManagement.registerLevels();
 			level++;
-			getFloorSchema();
+			floorScheme = FileManagement.getFloorSchema();
 			restartLevel();
 		}
 		
@@ -178,7 +172,7 @@ public class GameEngine implements Observer  {
 		 */
 		public void restartGame() {
 			level = 0;
-			getFloorSchema();
+			floorScheme = FileManagement.getFloorSchema();
 			restartLevel();	
 		}
 		
@@ -296,6 +290,22 @@ public class GameEngine implements Observer  {
 			return battery;
 		}
 		
+		public String getUsername() {
+			return this.username;
+		}
+		
+		public int getLevel() {
+			return this.level;
+		}
+
+		public int getGridHeight() {
+			return GRID_HEIGHT;
+		}
+
+		public int getGridWidth() {
+			return GRID_WIDTH;
+		}
+		
 		
 		/**
 		 * This method is used to increase or decrease the battery level of the player.
@@ -392,157 +402,7 @@ public class GameEngine implements Observer  {
 		}
 	}
 
-				
-	/**
-	 * Registers the level scores to a file.
-	 * This method checks if the current score is better than the best score
-	 * recorded and updates the scores file accordingly.
-	 */
-	public void registerLevels() {
-		int bestScore = Integer.parseInt(getBestLevelScores().split(":", 2)[1]);
-		if (bestScore < getBattery()) {
-			File file = new File("pontuacao.txt");
-			try {
-				file.createNewFile();
 
-				try (BufferedWriter output = new BufferedWriter(new FileWriter(file, true))) {
-					output.write("Username:" + username + "| Level:" + this.level + "| Score:" + getBattery());
-					output.newLine(); // Adds a new line for each entry
-				}
-			} catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-			}
-		}
-	}
-
-		
-	/**
-	 * Reads a file and returns its content as a list of string arrays.
-	 * Each line in the file is split into parts and added to the list.
-	 * 
-	 * @param filePath The path of the file to read.
-	 * @return A list of string arrays, where each array represents a line in the
-	 *         file.
-	 * @throws FileNotFoundException if the file is not found.
-	 */
-	private List<String[]> readFile(String filePath) throws FileNotFoundException {
-		List<String[]> lines = new ArrayList<>();
-		try (Scanner fileScanner = new Scanner(new File(filePath))) {
-			while (fileScanner.hasNextLine()) {
-				String[] parts = fileScanner.nextLine().split("\\|", 3);
-				if (parts.length == 3) {
-					lines.add(parts);
-				}
-			}
-		}
-		return lines;
-	}
-
-	/**
-	 * Retrieves the best score for the current level.
-	 * This method scans through the scores file and finds the best score for the
-	 * user at the current level.
-	 * 
-	 * @return A string representing the best score of the user at the current
-	 *         level.
-	 */
-	public String getBestLevelScores() {
-		int bestScore = 0;
-		try {
-			for (String[] parts : readFile("pontuacao.txt")) {
-				String username = parts[0].split(":", 2)[1].trim();
-				if (username.equals(this.username)) {
-					int currentLevel = Integer.parseInt(parts[1].split(":", 2)[1].trim());
-					int currentScore = Integer.parseInt(parts[2].split(":", 2)[1].trim());
-					if (currentLevel == level && currentScore > bestScore) {
-						bestScore = currentScore;
-					}
-				}
-			}
-		} catch (FileNotFoundException e) {
-			return "Error: Scores file not found.";
-		}
-		return this.username + ":" + bestScore;
-	}
-
-	/**
-	 * Retrieves the best scores of all users for the current level.
-	 * This method scans through the scores file and compiles a list of the best
-	 * scores at the current level.
-	 * 
-	 * @return A formatted string representing the best scores of all users at the
-	 *         current level.
-	 */
-	public String getAllBestLevelScores() {
-		StringBuilder usersBestScore = new StringBuilder("Best Scores of level " + level + "\n");
-		try {
-			for (String[] parts : readFile("pontuacao.txt")) {
-				int currentLevel = Integer.parseInt(parts[1].split(":", 2)[1].trim());
-				if (currentLevel == level) {
-					String username = parts[0].split(":", 2)[1].trim();
-					int currentScore = Integer.parseInt(parts[2].split(":", 2)[1].trim());
-					usersBestScore.append("User(").append(username).append("): ").append(currentScore).append("\n");
-				}
-			}
-		} catch (FileNotFoundException e) {
-			return "Error: Scores file not found.";
-		}
-		return usersBestScore.append("\nPress N to continue").toString();
-	}
-
-	/**
-	 * Retrieves the best scores for the current user for all levels.
-	 * This method scans through the scores file and compiles a list of the best
-	 * scores of the current user across all levels.
-	 * 
-	 * @return A formatted string representing the best scores of the current user
-	 *         for each level.
-	 */
-	public String getUsersBestScores() {
-		List<String> userScores = new ArrayList<>();
-		try {
-			for (String[] parts : readFile("pontuacao.txt")) {
-				String username = parts[0].split(":", 2)[1].trim();
-				int currentLevel = Integer.parseInt(parts[1].split(":", 2)[1].trim());
-				if (currentLevel == level) {
-					int currentScore = Integer.parseInt(parts[2].split(":", 2)[1].trim());
-					userScores.add(username + ": " + currentScore);
-				}
-			}
-		} catch (FileNotFoundException e) {
-			return "Error: Scores file not found.";
-		}
-
-		List<String> userBestScores = new ArrayList<>();
-		for (String scoreInfo : userScores) {
-			String[] parts = scoreInfo.split(": ");
-			String username = parts[0];
-			int score = Integer.parseInt(parts[1]);
-
-			boolean found = false;
-			for (String bestScoreInfo : userBestScores) {
-				if (bestScoreInfo.startsWith(username + ":")) {
-					int existingScore = Integer.parseInt(bestScoreInfo.split(": ")[1]);
-					if (score > existingScore) {
-						userBestScores.set(userBestScores.indexOf(bestScoreInfo), scoreInfo);
-					}
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
-				userBestScores.add(scoreInfo);
-			}
-		}
-
-		StringBuilder result = new StringBuilder("Sokoban Game Best Scores:\n");
-		for (String bestScore : userBestScores) {
-			result.append(bestScore).append("\n");
-		}
-		return result.append("\nPress N to continue").toString();
-	}
 		
 	/**
 	 * Sends the current game elements to the graphical user interface (GUI) for
@@ -562,51 +422,6 @@ public class GameEngine implements Observer  {
 		gui.addImages(imageTileList);
 	}
 
-	
-	/**
-	 * Recursively determines the number of the last level available in the game.
-	 * This method checks for the existence of level files in a sequence,
-	 * incrementing the level number until a file is not found.
-	 * It's used to identify how many levels are present in the game.
-	 *
-	 * @param level The starting level number from which to begin the search.
-	 *              Usually starts with 1 or the lowest level number.
-	 * @return The number of the last level available. If no file is found for the
-	 *         current level, it returns one less than the current level.
-	 */
-	private int getLastLevelNumber(int level) {
-		File file = new File("./levels/level" + level + ".txt");
-
-		if (file.exists()) {
-			return getLastLevelNumber(level + 1);
-		} else {
-			return level - 1;
-		}
-	}
-
-	/**
-	 * Reads the floor scheme for the current level from a file and populates the
-	 * floorScheme array.
-	 * This method opens a file corresponding to the current level and reads its
-	 * contents line by line.
-	 * Each line represents a row in the level's floor scheme, and each character in
-	 * a line represents a different element or tile.
-	 */
-	private void getFloorSchema() {
-		File file = new File("./levels/level" + level + ".txt");
-		try {
-			Scanner sc = new Scanner(file);
-			int row = 0;
-			while (sc.hasNextLine() && row != 10) {
-				floorScheme[row] = sc.nextLine().toCharArray();
-				row++;
-			}
-			sc.close();
-
-		} catch (FileNotFoundException e) {
-			// Handle the case where the level file is not found
-			e.printStackTrace();
-		}
-	}
-	
 }
+	
+

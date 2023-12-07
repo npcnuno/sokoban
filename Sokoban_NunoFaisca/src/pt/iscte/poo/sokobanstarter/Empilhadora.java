@@ -81,7 +81,6 @@ public class Empilhadora extends GameElement {
 
 					// Check if the object moved, if not return
 					forwardElement = instance.getGameElement(newPosition);
-					System.out.print(forwardElement.getName());
 				}
 
 				if (forwardElement.MobilityStatus().equals(MOVABLE))
