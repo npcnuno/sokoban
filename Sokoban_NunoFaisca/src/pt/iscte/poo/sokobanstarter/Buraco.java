@@ -5,20 +5,25 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Buraco extends GameElement {
 
+	//DATA FIELDS
+	
 	private Point2D position;
 	private boolean blocked;
 
+	//CONSTRUCTORS
 	
 	public Buraco(Point2D position) {
 		super(position);
 		this.position = position;
 		this.blocked = false;
-		setObjectMobilityStatus(FLOOR);
+		setObjectMobilityStatus(FLOOR_LEVEL);
 	}
 
+	//METHODS
+	
     @Override
 	public String getName() {
-		return "Buraco";
+		return HOLE;
 	}
 
 	@Override
@@ -31,13 +36,14 @@ public class Buraco extends GameElement {
 		GameElement element = instance.getGameElement(position);
 		if(!blocked) {
 			this.blocked = true;
-			element.setObjectMobilityStatus(FLOOR);
+			element.setObjectMobilityStatus(FLOOR_LEVEL);
 			isValid(element);
 			return this.position;
 		} else {
 			return this.position;
 		}
 	}
+	
 	public void isValid(GameElement element) {
 		GameEngine instance = GameEngine.getInstance();
 
@@ -45,13 +51,5 @@ public class Buraco extends GameElement {
 			instance.GameOver = true;
 		}
 	}
-	
-
-	
-	
-	
-
-
-
 
 }

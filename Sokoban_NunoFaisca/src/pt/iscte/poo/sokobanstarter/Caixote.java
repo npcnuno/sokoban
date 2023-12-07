@@ -5,87 +5,98 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Caixote extends GameElement {
 
+	//DATA FIELDS
+	
 	private Point2D position;
-	private String imageName;
-	private boolean noAlvo;
-	private int layer;
+	private boolean onTarget = false;
 
+	//CONSTRUCTORS
 	
 	public Caixote(Point2D initialposition) {
 		super(initialposition);
 		position = initialposition;
-		imageName = "Caixote";
-		noAlvo = false;
-		layer = 1;
 		setObjectMobilityStatus(MOVABLE);
 
 		
 	}
+	
+	//METHODS
 
 	@Override
 	public String getName() {
-		return imageName;
+		return CRATE;
 	}
 
 	@Override
 	public int getLayer() {
-		return layer;
+		return 1;
 	}
-	public void setLayer(int value) {
-		layer = value;
-	}
-
 
 	@Override
 	public Point2D getPosition(){
 		return position;
 	}
 	
-	public boolean isAlvo() {
-		return noAlvo;
+	public boolean onTarget() {
+		return onTarget;
 	}
 
-	public void setAlvo(boolean alvo) {
-		this.noAlvo = alvo;
+	public void setTargetBoolean(boolean alvo) {
+		this.onTarget = alvo;
 	}
 	
 	@Override
 	public void move(Direction dir) {
 		Point2D newPosition = position.plus(dir.asVector());
 		GameEngine instance = GameEngine.getInstance();
-		GameElement fowardElement = instance.getGameElement(newPosition);
-		instance.setBattery(-1);
-		if(isValid(dir)){
-			 if(fowardElement.getName() == "Alvo") {
-					instance.alvosAtingidos++;
-					setAlvo(true);
-				 } else if(fowardElement.getName() == "Chao")
-					 if(isAlvo() == true) {
-						 setAlvo(false);
-						 instance.alvosAtingidos--;
-					 }
-			 if(fowardElement.isHole(newPosition, dir) != null) {
-					position = fowardElement.isHole(newPosition, dir);
-					return;
-				}
-			 position = newPosition;
+		GameElement forwardElement = instance.getGameElement(newPosition);
 
+		// Decrease battery with each move
+		instance.setBattery(-1);
+
+		// Check if the move is valid
+		if (isValid(dir)) {
+
+			// Handling interaction with the targe
+			if (TARGET.equals(forwardElement.getName())) {
+				instance.targetsHit++;
+				setTargetBoolean(true);
+			} else if (FLOOR.equals(forwardElement.getName()) && onTarget) {
+				setTargetBoolean(false);
+				instance.targetsHit--;
+			}
+
+			// Handling hole interaction
+			if (forwardElement.isHole(newPosition, dir) != null) {
+				position = forwardElement.isHole(newPosition, dir);
+				return;
+			}
+
+			// Update the position
+			position = newPosition;
 		}
 	}
+
 	@Override
 	public boolean isValid(Direction dir) {
-			Point2D newPosition = position.plus(dir.asVector());
-			GameEngine instance = GameEngine.getInstance();
-			GameElement fowardElement = instance.getGameElement(newPosition);
-			if (newPosition.getX()>=0 && newPosition.getX()<10 && 
-				newPosition.getY()>=0 && newPosition.getY()<10){
-						if(fowardElement.MobilityStatus().equals(FLOOR)){
-							return true;
-							}
-						}
-				return false;
+		// Calculate the new position based on the current direction
+		Point2D newPosition = position.plus(dir.asVector());
+		GameEngine instance = GameEngine.getInstance();
+		// Retrieve the game element at the new position
+		GameElement forwardElement = instance.getGameElement(newPosition);
+
+		// Check if the new position is within the game boundaries
+		if (newPosition.getX() >= 0 && newPosition.getX() < 10 &&
+				newPosition.getY() >= 0 && newPosition.getY() < 10) {
+
+			// Check if the forward element's mobility status allows for valid movement
+			if (forwardElement.MobilityStatus().equals(FLOOR_LEVEL)) {
+				return true;
+			}
+		}
+		// Return false if the move is not valid
+		return false;
 	}
 
 }
-	
 

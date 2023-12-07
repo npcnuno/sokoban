@@ -23,6 +23,8 @@ public class Teclado {
         	nextLevel();
         if(key == KeyEvent.VK_Q )
         	quit();
+        if(key == KeyEvent.VK_F)
+        	restartGame();
         	
         	
         return null;
@@ -32,6 +34,12 @@ public class Teclado {
 public static void restart() {
 	GameEngine instance = GameEngine.getInstance();
 	instance.restartLevel();
+}
+
+public static void restartGame() {
+	GameEngine instance = GameEngine.getInstance();
+	instance.restartGame();
+
 }
 
 public static void nextLevel() {
@@ -45,9 +53,7 @@ public static void nextLevel() {
 
 public static void quit() {
 	GameEngine instance = GameEngine.getInstance();
-	
-	if(instance.wonGame)
-		instance.restartGame();
+	instance.quit();
 }
 
 }

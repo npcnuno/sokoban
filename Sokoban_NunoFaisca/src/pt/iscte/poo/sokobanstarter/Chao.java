@@ -1,35 +1,24 @@
 package pt.iscte.poo.sokobanstarter;
 
-import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
 public class Chao extends GameElement {
 
-	private Point2D position;
-	private String imageName;
-	protected String MobilityStatus = FLOOR;
-
-
-
-		
+	//CONSTRUCTORS
 	public Chao(Point2D initialPosition) {
 		super(initialPosition);
-		this.position = initialPosition;
-		imageName = "Chao";
-		setObjectMobilityStatus(FLOOR);
+		setObjectMobilityStatus(FLOOR_LEVEL);
 	}
 
+	//METHODS
+	
 	@Override
 	public String getName() {
-		return imageName;
+		return FLOOR;
 	}
 	
 	@Override
 	public int getLayer() {
 		return 0;
-	}
-	@Override
-	public Point2D getPosition(){
-		return position;
 	}
 }

@@ -5,19 +5,23 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Teleporte extends GameElement {
 
+	//DATA FIELDS
+	
 	Point2D position;
 
+	//CONSTRUCTORS
+	
 	public Teleporte(Point2D position) {
 		super(position);
 		this.position = position;
-		setObjectMobilityStatus(FLOOR);
-
-
+		setObjectMobilityStatus(FLOOR_LEVEL);
 	}
-
+	
+	//METHODS
+	
     @Override
 	public String getName() {
-		return "Teleporte";
+		return TELEPORT;
 	}
 
 	@Override
@@ -28,17 +32,14 @@ public class Teleporte extends GameElement {
 		return position;
 	}
 
-	@Override
-	public void move(Direction direction) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'move'");
-	}
 	public Point2D isHole(Point2D position, Direction dir) {
 		GameEngine instance = GameEngine.getInstance();
-		position = instance.searchTypeOfGameElement(position, "Teleporte");
-		if(instance.getGameElement(position).getName().equals("Teleporte")){
+		position = instance.searchTypeOfGameElement(position, TELEPORT);
+		
+		if(instance.getGameElement(position).getName().equals(TELEPORT)){
 			return position;
 		}
+		
 		return null;
 	}
 }
